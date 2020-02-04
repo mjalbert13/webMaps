@@ -6,12 +6,31 @@ lat = list(data["LAT"])
 lon = list(data["LON"])
 elev = list(data["ELEV"])
 
+def color(elvation):
+    if elvation < 1000:
+        return "green"
+    elif 1000 <= elvation < 3000:
+        return "orange"
+    else:
+        return "red"
+
 map = folium.Map(location=[38.58, -99.09], zoom_start=6, tiles= "Stamen Terrain")
-fg = folium.FeatureGroup(name="My Map")
+fgv = folium.FeatureGroup(name="Volcanoes")
 
 for lt, ln, el in zip(lat, lon, elev):
-    fg.add_child(folium.Marker(location=[lt,ln], popup=folium.Popup(str(el+" m"),parse_html=True), icon=folium.Icon(color="green")))
+    fgv.add_child(folium.CircleMarker(location=[lt,ln], popup=folium.Popup(str(el)+" m",parse_html=True), color=color(el), fill_opacity=0.7,fill_color=color(el), fill=True))
 
-map.add_child(fg)
+fgp = folium.FeatureGroup(name="Population")
+
+fgp.add_child(folium.GeoJson(data=open("world.json", "r", encoding='utf-8-sig').read(),
+style_function=lambda x: {'fillColor': 'yellow' if x['properties']['POP2005'] < 10000000 
+else'orange' if 10000000<= x ['properties']['POP2005'] < 20000000 else 'red'}))
+
+
+
+map.add_child(fgv)
+map.add_child(fgp)
+
+map.add_child(folium.LayerControl())
 map.save("map1.html")
 
